@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Caja - TPV</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+    /* Variables de Color */
+    :root {
+        --color-primary: #3498db; /* Azul vibrante */
+        --color-secondary: #2ecc71; /* Verde para éxito/agregar */
+        --color-danger: #e74c3c; /* Rojo para eliminar */
+        --color-background: #ecf0f1; /* Gris claro */
+        --color-surface: #ffffff; /* Blanco para contenedores */
+        --color-text: #2c3e50; /* Gris oscuro para texto */
+        --color-border: #bdc3c7; /* Gris suave para bordes */
+    }
+
+    /* Estilos Generales */
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: var(--color-background);
+        color: var(--color-text);
+        line-height: 1.6;
+        min-height: 100vh; /* Para que el fondo cubra toda la vista */
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Alinear arriba en pantallas grandes */
+        padding-top: 20px;
+    }
+
+    h1 {
+        font-weight: 700;
+        color: var(--color-primary);
+        margin-bottom: 20px;
+    }
+
+    h2 {
+        font-weight: 600;
+        color: var(--color-text);
+        border-bottom: 2px solid var(--color-border);
+        padding-bottom: 5px;
+        margin-top: 25px;
+        text-align: left; /* Alinear a la izquierda */
+    }
+
+    .container {
+        width: 95%;
+        max-width: 1200px;
+        margin: 20px auto;
+        background: var(--color-surface);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Diseño con Grid para el layout principal */
+    .grid-layout {
+        display: grid;
+        grid-template-columns: 1fr; /* Una columna por defecto */
+        gap: 30px;
+        margin-top: 20px;
+    }
+
+    /* Inputs y Botones */
+    .input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    input[type="text"], input[type="number"] {
+        flex-grow: 1;
+        padding: 12px;
+        border: 1px solid var(--color-border);
+        border-radius: 6px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+        min-width: 100px; /* Asegura que no se hagan muy pequeños */
+    }
+
+    input:focus {
+        border-color: var(--color-primary);
+        outline: none;
+    }
+
+    button {
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s, transform 0.1s;
+        white-space: nowrap; /* Evita que el texto del botón se rompa */
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+
+    button:active {
+        transform: scale(0.98);
+    }
+
+    /* Estilos específicos de botones */
+    #agregarProducto-btn {
+        background-color: var(--color-secondary);
+        color: var(--color-surface);
+        flex-grow: 0;
+    }
+
+    #generarTicket-btn {
+        background-color: var(--color-primary);
+        color: var(--color-surface);
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .delete-btn {
+        background-color: var(--color-danger);
+        color: var(--color-surface);
+        padding: 5px 10px;
+        font-size: 14px;
+        line-height: 1;
+    }
+
+    /* Tabla (Carrito) */
+    table {
+        width: 100%;
+        border-collapse: separate; /* Usar border-collapse: separate para bordes redondeados */
+        border-spacing: 0;
+        margin-top: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        border-radius: 8px;
+        overflow: hidden; /* Para que los bordes redondeados se apliquen a la tabla */
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    th {
+        background-color: var(--color-primary);
+        color: var(--color-surface);
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    /* Resumen y Ticket */
+    .total-summary {
+        text-align: right;
+        padding: 15px 0;
+        font-size: 1.2em;
+        margin-top: 10px;
+    }
+
+    .total {
+        font-weight: 700;
+        color: var(--color-danger); /* Resaltar el total */
+    }
+
+    #ticket {
+        background: #f1f8ff; /* Fondo más suave para el ticket */
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border: 1px dashed var(--color-primary);
+    }
+
+    #ticket h3 {
+        text-align: center;
+        color: var(--color-primary);
+        margin-top: 0;
+    }
+
+    #ticket ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    #ticket li {
+        border-bottom: 1px dotted var(--color-border);
+        padding: 5px 0;
+    }
+
+    /* Historial de Ventas */
+    .ventas {
+        background: #f0fdf5; /* Fondo verde muy claro para historial */
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        border: 1px solid var(--color-secondary);
+    }
+
+    .venta-item {
+        border-bottom: 1px solid #dcdcdc;
+        padding: 10px 0;
+    }
+
+    .venta-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Media Queries para Responsive */
+    @media (min-width: 768px) {
+        /* Layout de dos columnas para pantallas medianas y grandes */
+        .grid-layout {
+            grid-template-columns: 2fr 1fr; /* Carrito más ancho que el historial/ticket */
+        }
+    }
+
+    @media (max-width: 600px) {
+        /* Ajustes para móviles */
+        .container {
+            padding: 15px;
+            margin: 10px;
+        }
+
+        h1 {
+            font-size: 1.8em;
+        }
+
+        h2 {
+            font-size: 1.4em;
+        }
+
+        .input-group {
+            flex-direction: column; /* Inputs apilados verticalmente */
+        }
+
+        #agregarProducto-btn {
+            width: 100%;
+        }
+
+        /* Ocultar columnas menos importantes en móviles para la tabla */
+        table thead {
+            display: none; /* Oculta el encabezado */
+        }
+
+        table, tbody, tr, td {
+            display: block;
+            width: 100%;
+        }
+
+        tr {
+            margin-bottom: 15px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        td {
+            text-align: right;
+            border: none;
+            padding: 5px 0;
+            position: relative;
+        }
+
+        td::before {
+            /* Muestra el nombre de la columna como etiqueta */
+            content: attr(data-label);
+            position: absolute;
+            left: 0;
+            font-weight: 600;
+        }
+
+        /* Ajuste específico para el botón de eliminar */
+        td:last-child {
+            text-align: center;
+            padding-top: 10px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Sistema de Caja <span role="img" aria-label="caja">💰</span></h1>
+    </header>
+
+    <div class="grid-layout">
+        <section class="caja-section">
+            <h2>Agregar Producto</h2>
+            <div class="input-group">
+                <input type="text" id="nombre" placeholder="Nombre del producto" aria-label="Nombre del producto">
+                <input type="number" id="precio" placeholder="Precio" min="0" step="0.01" aria-label="Precio">
+                <input type="number" id="cantidad" placeholder="Cantidad" min="1" aria-label="Cantidad">
+                <button onclick="agregarProducto()" id="agregarProducto-btn">Agregar <span role="img" aria-label="más">+</span></button>
+            </div>
+
+            <h2>Carrito de Compras</h2>
+            <div class="table-container">
+                <table id="tablaProductos">
+                    </table>
+            </div>
+
+            <div class="total-summary">
+                <p>Subtotal: $<span id="total">0.00</span></p>
+                <button onclick="generarTicket()" id="generarTicket-btn">Finalizar Venta y Generar Ticket <span role="img" aria-label="recibo">🧾</span></button>
+            </div>
+        </section>
+
+        <aside class="historial-section">
+            <h2>Ticket Reciente</h2>
+            <div id="ticket">
+                <p style="text-align: center;">El ticket aparecerá aquí al finalizar la venta.</p>
+            </div>
+
+            <h2>Historial de Ventas</h2>
+            <div id="historialVentas" class="ventas">
+                <p>Cargando historial...</p>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<script>
+    let carrito = [];
+    // Carga las ventas desde localStorage, si existen.
+    let ventas = JSON.parse(localStorage.getItem('ventas')) || [];
+
+    function agregarProducto() {
+        const nombreInput = document.getElementById('nombre');
+        const precioInput = document.getElementById('precio');
+        const cantidadInput = document.getElementById('cantidad');
+
+        const nombre = nombreInput.value.trim();
+        const precio = parseFloat(precioInput.value);
+        const cantidad = parseInt(cantidadInput.value);
+
+        if (!nombre || isNaN(precio) || precio < 0 || isNaN(cantidad) || cantidad <= 0) {
+            alert('Por favor, completa correctamente los campos: Nombre, Precio (>=0) y Cantidad (>=1).');
+            return;
+        }
+
+        // Verifica si el producto ya existe en el carrito
+        const productoExistente = carrito.find(p => p.nombre.toLowerCase() === nombre.toLowerCase());
+
+        if (productoExistente) {
+            // Si existe, solo aumenta la cantidad
+            productoExistente.cantidad += cantidad;
+        } else {
+            // Si no existe, lo agrega como nuevo
+            carrito.push({ nombre, precio, cantidad });
+        }
+        
+        actualizarTabla();
+        limpiarInputs();
+    }
+
+    function actualizarTabla() {
+        const tabla = document.getElementById('tablaProductos');
+        // Usar un array para las filas y luego .join('') para mejor rendimiento
+        let filasHTML = [];
+        let total = 0;
+
+        // Encabezado de la tabla
+        filasHTML.push(`
+            <tr>
+                <th>Producto</th>
+                <th>Precio</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Eliminar</th>
+            </tr>
+        `);
+
+        carrito.forEach((p, index) => {
+            const subtotal = p.precio * p.cantidad;
+            total += subtotal;
+            
+            // Fila de datos. Añadimos el atributo 'data-label' para el responsive en móviles.
+            filasHTML.push(`
+                <tr>
+                    <td data-label="Producto">${p.nombre}</td>
+                    <td data-label="Precio">$${p.precio.toFixed(2)}</td>
+                    <td data-label="Cantidad">${p.cantidad}</td>
+                    <td data-label="Subtotal">$${subtotal.toFixed(2)}</td>
+                    <td data-label="Eliminar"><button onclick="eliminarProducto(${index})" class="delete-btn">X</button></td>
+                </tr>
+            `);
+        });
+
+        tabla.innerHTML = filasHTML.join('');
+        document.getElementById('total').innerText = total.toFixed(2);
+    }
+
+    function eliminarProducto(index) {
+        if (confirm(`¿Estás seguro de que quieres eliminar ${carrito[index].nombre} del carrito?`)) {
+            carrito.splice(index, 1);
+            actualizarTabla();
+        }
+    }
+
+    function limpiarInputs() {
+        document.getElementById('nombre').value = '';
+        document.getElementById('precio').value = '';
+        document.getElementById('cantidad').value = '';
+        document.getElementById('nombre').focus(); // Vuelve a poner el foco en el nombre
+    }
+
+    function generarTicket() {
+        if (carrito.length === 0) {
+            alert('¡El carrito está vacío! Agrega productos para generar un ticket.');
+            return;
+        }
+
+        const now = new Date();
+        const fecha = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+        const total = document.getElementById('total').innerText;
+
+        // Construir el HTML del ticket
+        const productosList = carrito.map(p => 
+            `<li>${p.cantidad} x ${p.nombre} @ $${p.precio.toFixed(2)} = $${(p.precio * p.cantidad).toFixed(2)}</li>`
+        ).join('');
+
+        const ticketHTML = `
+            <h3>*** COMPROBANTE DE VENTA ***</h3>
+            <p><b>Fecha:</b> ${fecha}</p>
+            <hr style="border-top: 1px dashed #ccc;">
+            <ul>
+                ${productosList}
+            </ul>
+            <hr style="border-top: 2px solid var(--color-primary);">
+            <p class="total" style="text-align: right; font-size: 1.3em;">TOTAL PAGADO: $${total}</p>
+            <p style="text-align: center; margin-top: 15px; font-size: 0.9em;">¡Gracias por tu compra!</p>
+        `;
+
+        document.getElementById('ticket').innerHTML = ticketHTML;
+
+        // Guardar venta
+        ventas.unshift({ // unshift lo pone al principio para que se vea el más reciente
+            fecha,
+            productos: carrito,
+            total // total ya es un string con el formato '0.00'
+        });
+        localStorage.setItem('ventas', JSON.stringify(ventas));
+
+        // Vaciar el carrito para la próxima venta
+        carrito = [];
+        actualizarTabla();
+        mostrarHistorial();
+
+        alert(`¡Venta finalizada! Total: $${total}`);
+    }
+
+    function mostrarHistorial() {
+        const div = document.getElementById('historialVentas');
+        if (ventas.length === 0) {
+            div.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No hay ventas registradas aún.</p>';
+            return;
+        }
+
+        // Mostrar solo las 5 ventas más recientes (o todas si son menos de 5)
+        const historialReciente = ventas.slice(0, 5); 
+
+        div.innerHTML = historialReciente.map(v => `
+            <div class="venta-item">
+                <p><b>Fecha:</b> ${v.fecha}</p>
+                <p style="font-size: 0.9em;">Productos: ${v.productos.map(p => `${p.cantidad} x ${p.nombre}`).join(', ')}</p>
+                <p class="total" style="color: var(--color-primary);"><b>Total:</b> $${v.total}</p>
+            </div>
+        `).join('');
+
+        // Añadir una opción para limpiar el historial (opcional pero útil)
+        div.innerHTML += '<button onclick="limpiarHistorial()" style="background-color: #f39c12; color: white; width: 100%; margin-top: 10px;">Limpiar Historial</button>';
+    }
+
+    function limpiarHistorial() {
+        if (confirm('¿Estás seguro de que quieres borrar PERMANENTEMENTE todo el historial de ventas? Esta acción no se puede deshacer.')) {
+            localStorage.removeItem('ventas');
+            ventas = [];
+            mostrarHistorial();
+        }
+    }
+
+    // Inicializar la tabla y el historial al cargar
+    document.addEventListener('DOMContentLoaded', () => {
+        actualizarTabla();
+        mostrarHistorial();
+    });
+</script>
+</body>
+</html>
